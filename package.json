@@ -1,0 +1,17 @@
+{
+  "name": "meetingbot",
+  "version": "1.0.0",
+  "description": "A discord meeting bot.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon ./app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Maximilian Gertz",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "discord.js": "^13.3.1",
+    "dotenv": "^10.0.0"
+  }
+}
