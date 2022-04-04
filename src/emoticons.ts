@@ -1,3 +1,3 @@
 export const emoticons = {
-  PARTY_POPPER: '🎉',
+	PARTY_POPPER: '🎉',
 };

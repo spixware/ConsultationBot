@@ -11,16 +11,16 @@ export function registerCommands() {
 	const commands = [
 		new SlashCommandBuilder()
 			.setName('ping')
-			.setDescription('Sends private booking menu.'),
+			.setDescription('Pings the service.'),
 		new SlashCommandBuilder()
 			.setName('init')
 			.setDescription('Sends private booking menu.'),
 		new SlashCommandBuilder()
 			.setName('cdm')
-			.setDescription('Sends private booking menu.'),
+			.setDescription('Creates a DM channel.'),
 		new SlashCommandBuilder()
 			.setName('clean')
-			.setDescription('Sends private booking menu.'),
+			.setDescription('Resets guild channel.'),
 	].map((command) => command.toJSON());
 
 	const rest = new REST({ version: '9' }).setToken(token!);
