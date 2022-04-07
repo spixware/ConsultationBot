@@ -1,5 +1,4 @@
 import { CommandInteraction } from 'discord.js';
-import { emoticons } from '../emoticons';
 import { buildMainMenu, buildStartMenu } from '../MenuBuilder';
 
 export async function handleCommandInteraction(
