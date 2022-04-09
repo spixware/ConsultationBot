@@ -1,5 +1,14 @@
-import { ButtonInteraction, Interaction } from 'discord.js';
+import { ButtonInteraction } from 'discord.js';
+import moment from 'moment';
 import Student, { Status } from './Student';
+
+export type Consultation = {
+	timestamp: number;
+	prof: string;
+	id: string;
+	name: string;
+	matrNum: string;
+};
 
 class SessionManager {
 	private constructor() {}
@@ -9,6 +18,7 @@ class SessionManager {
 	}
 	private activeSessions: Map<string, ButtonInteraction> = new Map();
 	private students: Map<string, Student> = new Map();
+	private appointments: Array<Consultation> = [];
 
 	public startSession(userId: string, interaction: ButtonInteraction) {
 		this.activeSessions.set(userId, interaction);
@@ -40,6 +50,41 @@ class SessionManager {
 		} else {
 			console.log('Could not find student', userId);
 		}
+	}
+
+	public submitAppointment(userId: string) {
+		let student = this.getStudent(userId);
+		if (student === undefined) {
+			console.log('Session not found');
+			return;
+		}
+
+		student.submitAppointment();
+		this.appointments.push({
+			timestamp: student.cache.time,
+			prof: student.cache.professor,
+			id: userId,
+			name: student.name,
+			matrNum: student.matrNum,
+		});
+	}
+
+	public getAppointments(userId: string) {
+		let collector: Array<Consultation> = [];
+		this.appointments.forEach((app) => {
+			if (app.id === userId) {
+				collector.push(app);
+			}
+		});
+		collector.sort((a, b) => {
+			return a.timestamp - b.timestamp;
+		});
+		return collector;
+	}
+
+	// only for dev purposes
+	public devShortcut(student: Student, userId: string) {
+		this.students.set(userId, student);
 	}
 }
 

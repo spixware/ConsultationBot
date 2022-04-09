@@ -1,7 +1,13 @@
 import { Message } from 'discord.js';
-import { buildRequestMenu } from '../MenuBuilder';
+import {
+	buildAppointmentMenu,
+	buildRequestMenu,
+	buildRequestTimeMenu,
+	refreshMenu,
+} from '../MenuBuilder';
 import SessionManager from '../SessionManager';
 import Student, { Status } from '../Student';
+import moment from 'moment';
 
 const session = SessionManager.Instance;
 export async function handleDirectMessage(message: Message) {
@@ -14,7 +20,7 @@ export async function handleDirectMessage(message: Message) {
 	if (student.status === Status.IDLE) return;
 	if (student.status === Status.LISTEN_FOR_NAME) {
 		student.name = message.content;
-		checkForCompletion(student);
+		checkFormCompletion(student);
 		if (interaction !== undefined) {
 			interaction.editReply(buildRequestMenu(userId));
 		} else {
@@ -24,19 +30,49 @@ export async function handleDirectMessage(message: Message) {
 	}
 	if (student.status === Status.LISTEN_FOR_MATRNUM) {
 		student.matrNum = message.content;
-		checkForCompletion(student);
+		checkFormCompletion(student);
 		if (interaction !== undefined) {
 			interaction.editReply(buildRequestMenu(userId));
 		} else {
 			console.log('Failed to update Interaction!');
 		}
 		return;
+	}
+	if (student.status === Status.LISTEN_FOR_TIME) {
+		let day = moment.unix(student.cache.time);
+		let time = message.content.split(':');
+		day.hours(parseFloat(time[0]));
+		day.minutes(parseFloat(time[1]));
 
+		student.cacheTime(day.unix());
+		if (student.cache.professor === '') {
+			session.updateStudentStatus(userId, Status.LISTEN_FOR_PROF);
+		} else {
+			session.updateStudentStatus(userId, Status.CACHE_COMPLETE);
+		}
+		if (interaction !== undefined) {
+			interaction.editReply(buildAppointmentMenu(userId));
+		} else {
+			console.log('Failed to update Interaction!');
+		}
 		return;
 	}
+	if (student.status === Status.LISTEN_FOR_DATE) {
+		student.cacheTime(
+			moment(message.content, 'DD-MM-YYYY').startOf('day').unix()
+		);
+		session.updateStudentStatus(userId, Status.LISTEN_FOR_TIME);
+		if (interaction !== undefined) {
+			interaction.editReply(buildRequestTimeMenu(userId));
+		} else {
+			console.log('Failed to update Interaction!');
+		}
+		return;
+	}
+	interaction?.editReply(refreshMenu(userId));
 }
 
-function checkForCompletion(student: Student) {
+function checkFormCompletion(student: Student) {
 	if (student.name !== '' && student.matrNum !== '')
 		student.status = Status.FORM_COMPLETE;
 }

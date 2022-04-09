@@ -13,6 +13,7 @@ const BUTTONS = {
 	cancel: buildButton('cancel', 'Cancel', 'DANGER'),
 	checkMenu: buildButton('check', 'Check', 'PRIMARY'),
 	instructionsMenu: buildButton('instructions', 'Instructions', 'PRIMARY'),
+	submit: buildButton('submit', 'Book Appointment', 'SUCCESS'),
 	profMenu: buildButton(
 		'prof',
 		'Select Professor ' + emoticons.PROF,
@@ -25,7 +26,11 @@ const BUTTONS = {
 		{ selectProf: buildButton('p_kleinen', 'B. Kleinen', 'PRIMARY') },
 	],
 
-	timeMenu: buildButton('time', 'Time & Date ' + emoticons.CALENDAR, 'PRIMARY'),
+	dateTime: buildButton(
+		'dateTime',
+		'Enter Date & Time' + emoticons.CALENDAR,
+		'PRIMARY'
+	),
 };
 
 function buildButton(

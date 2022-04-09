@@ -67,7 +67,6 @@ export function buildStartMenu() {
 	);
 
 	return {
-		content: 'Follow these guidlines:',
 		embeds: [embed],
 		components: [row],
 	};
@@ -75,6 +74,9 @@ export function buildStartMenu() {
 
 export function buildRequestMenu(userId: string) {
 	let student = session.getStudent(userId);
+	if (student === undefined) {
+		return buildStartMenu();
+	}
 
 	const embed = new MessageEmbed()
 		.setColor('#0099ff')
@@ -85,15 +87,15 @@ export function buildRequestMenu(userId: string) {
 				name: 'Name:',
 				value:
 					student !== undefined && student.name !== ''
-						? student.name
-						: 'No name provided yet.',
+						? student.name + ' ' + emoticons.CHECK
+						: 'No name provided yet. ' + emoticons.EMPTY,
 			},
 			{
 				name: 'Matriculation Number:',
 				value:
 					student !== undefined && student.matrNum !== ''
-						? student.matrNum
-						: 'No matricuation number provided yet.',
+						? student.matrNum + ' ' + emoticons.CHECK
+						: 'No matricuation number provided yet. ' + emoticons.EMPTY,
 			}
 		);
 
@@ -107,7 +109,6 @@ export function buildRequestMenu(userId: string) {
 	}
 
 	return {
-		content: 'Follow these guidlines:',
 		embeds: [embed],
 		components: [row],
 	};
@@ -123,7 +124,6 @@ export function buildRequestNameMenu() {
 		});
 	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
 	return {
-		content: 'Follow these guidlines:',
 		embeds: [embed],
 		components: [row],
 	};
@@ -139,7 +139,6 @@ export function buildRequestMatrNumMenu() {
 		});
 	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
 	return {
-		content: 'Follow these guidlines:',
 		embeds: [embed],
 		components: [row],
 	};
@@ -147,6 +146,9 @@ export function buildRequestMatrNumMenu() {
 
 export function buildAppointmentMenu(userId: string) {
 	let student = session.getStudent(userId);
+	if (student === undefined) {
+		return buildStartMenu();
+	}
 	let prof = student!.cache.professor;
 	let time = student!.cache.time;
 	const embed = new MessageEmbed()
@@ -156,23 +158,69 @@ export function buildAppointmentMenu(userId: string) {
 			{
 				name:
 					emoticons.PROF + ' The professor that you have an appointment with: ',
-				value: prof !== '' ? prof : 'No prof selected',
+				value:
+					prof !== ''
+						? prof + ' ' + emoticons.CHECK
+						: 'No prof selected ' + emoticons.EMPTY,
 			},
 			{
 				name: emoticons.CALENDAR + ' The time and date of the appointment: ',
-				value: time !== 0 ? moment(time).format() : 'No time and date selected',
+				value:
+					time !== 0
+						? moment.unix(time).format('DD-MMMM-YYYY HH:mm') +
+						  ' ' +
+						  emoticons.CHECK
+						: 'No time and date selected ' + emoticons.EMPTY,
 			}
 		);
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.navBack,
 		BUTTONS.profMenu,
-		BUTTONS.timeMenu,
+		BUTTONS.dateTime,
 		BUTTONS.cancel
 	);
+
+	if (student.status === Status.CACHE_COMPLETE)
+		row.addComponents(BUTTONS.continue);
+
 	return {
-		content: 'Follow these guidlines:',
 		embeds: [embed],
 		components: [row],
+	};
+}
+
+export function buildAppointmentSuccessfulMenu(userId: string) {
+	let student = session.getStudent(userId);
+	if (student === undefined) {
+		return buildStartMenu();
+	}
+	let prof = student.cache.professor;
+	let date = moment.unix(student.cache.time).format('Do-MMMM-YYYY');
+	let time = moment.unix(student.cache.time).format('HH:mm a');
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle(
+			'Hey ' +
+				student.name +
+				' I successfully booked a consultation appointment for you!'
+		)
+		.addFields({
+			name:
+				'You have an appoitment with ' +
+				student.cache.professor +
+				' on ' +
+				date +
+				' at ' +
+				time,
+			value:
+				'Use the main menu on the server for further options and instrucations!',
+		});
+
+	if (student.status === Status.CACHE_COMPLETE)
+		session.updateStudentStatus(userId, Status.REGISTERED);
+
+	return {
+		embeds: [embed],
+		components: [],
 	};
 }
 
@@ -204,23 +252,157 @@ export function buildRequestProfMenu(userId: string) {
 		BUTTONS.navFor
 	);
 	return {
-		content: 'Follow these guidlines:',
+		embeds: [embed],
+		components: [row],
+	};
+}
+
+export function buildTimeDateMenu(userId: string) {
+	let student = session.getStudent(userId);
+	if (student === undefined) {
+		return buildStartMenu();
+	}
+	let time = student.cache.time;
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle('Time & Date Information')
+		.addFields(
+			{
+				name: emoticons.CALENDAR + ' Date:',
+				value:
+					time !== 0
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
+						: 'No date selected ' + emoticons.EMPTY,
+			},
+			{
+				name: emoticons.CLOCK + ' Time:',
+				value:
+					time !== 0
+						? moment.unix(time).format('HH:mm') + emoticons.CHECK
+						: 'No time selected ' + emoticons.EMPTY,
+			}
+		);
+	const row = new MessageActionRow().addComponents(
+		BUTTONS.cancel,
+		BUTTONS.continue
+	);
+	return {
 		embeds: [embed],
 		components: [row],
 	};
 }
 
 export function buildRequestTimeMenu(userId: string) {
-	return refreshMenu(userId);
+	let student = session.getStudent(userId);
+	if (student === undefined) {
+		return buildStartMenu();
+	}
+	let time = student.cache.time;
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle("Enter Time like '14:30'")
+		.addFields(
+			{
+				name: emoticons.CLOCK + ' Time:',
+				value: 'No time selected ' + emoticons.EMPTY,
+			},
+			{
+				name: emoticons.CALENDAR + ' Date:',
+				value:
+					time !== 0
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
+						: 'No date selected ' + emoticons.EMPTY,
+			}
+		);
+	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	return {
+		embeds: [embed],
+		components: [row],
+	};
+}
+
+export function buildRequestDateMenu(userId: string) {
+	let student = session.getStudent(userId);
+	let time = student?.cache.time;
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle("Enter Date like 'DD-MM-YYYY'")
+		.addFields({
+			name: emoticons.CALENDAR + ' Date:',
+			value:
+				time !== 0
+					? emoticons.CALENDAR +
+					  ' ' +
+					  moment.unix(time!).format('"Do-MMMM-YYYY"') +
+					  ' ' +
+					  emoticons.CHECK
+					: 'No date selected ' + emoticons.EMPTY,
+		});
+	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	return {
+		embeds: [embed],
+		components: [row],
+	};
+}
+
+export function buildCheckMenu(userId: string) {
+	let student = session.getStudent(userId);
+	let prof = student!.cache.professor;
+	let time = student!.cache.time;
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle('Check your Stats')
+		.addFields(
+			{
+				name: emoticons.CALENDAR + ' Date:',
+				value:
+					time !== 0
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
+						: 'No date selected ' + emoticons.EMPTY,
+			},
+			{
+				name: emoticons.CLOCK + ' Time:',
+				value:
+					time !== 0
+						? moment.unix(time).format('HH:mm') + ' ' + emoticons.CHECK
+						: 'No time selected ' + emoticons.EMPTY,
+			},
+			{
+				name:
+					emoticons.PROF + ' The professor that you have an appointment with: ',
+				value:
+					prof !== ''
+						? prof + ' ' + emoticons.CHECK
+						: 'No prof selected ' + emoticons.EMPTY,
+			}
+		);
+	const row = new MessageActionRow().addComponents(
+		BUTTONS.cancel,
+		BUTTONS.submit
+	);
+	return {
+		embeds: [embed],
+		components: [row],
+	};
 }
 
 export function refreshMenu(userId: string) {
-	let student = session.getStudent(userId);
-	if (student?.status === Status.LISTEN_FOR_PROF) {
-		return buildRequestProfMenu(userId);
+	let status = session.getStudent(userId)?.status;
+	let menu = buildStartMenu();
+	if (status === Status.FORM_COMPLETE) {
+		menu = buildRequestMenu(userId);
+	} else if (
+		status === Status.LISTEN_FOR_TIME ||
+		status === Status.LISTEN_FOR_DATE
+	) {
+		session.updateStudentStatus(userId, Status.FORM_COMPLETE);
+		menu = buildAppointmentMenu(userId);
+	} else if (status === Status.LISTEN_FOR_PROF) {
+		menu = buildRequestProfMenu(userId);
 	} else {
-		return buildStartMenu();
+		session.cancelSession(userId);
 	}
+	return menu;
 }
 
 function adjustScrollWidth(student: Student, max: number): number {

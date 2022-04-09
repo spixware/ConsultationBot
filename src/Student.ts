@@ -5,6 +5,7 @@ export enum Status {
 	'FORM_COMPLETE',
 	'LISTEN_FOR_PROF',
 	'LISTEN_FOR_TIME',
+	'LISTEN_FOR_DATE',
 	'CACHE_COMPLETE',
 	'REGISTERED',
 	'WAITING',
@@ -82,7 +83,7 @@ class Student {
 	public submitAppointment() {
 		if (this._cache.professor !== undefined && this._cache.time !== undefined) {
 			console.log(this._cache);
-			this._status = Status.FORM_COMPLETE;
+			this._status = Status.REGISTERED;
 			this._calendar.push(this._cache);
 			this._cache = { professor: '', time: 0 };
 		}

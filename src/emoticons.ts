@@ -5,4 +5,7 @@ export const emoticons = {
 	CALENDAR: '🗓️',
 	LEFT_ARROW: '⬅️',
 	RIGHT_ARROW: '➡️',
+	CLOCK: '🕑',
+	CHECK: '✅',
+	EMPTY: '❓',
 };
