@@ -15,7 +15,10 @@ export async function handleDirectMessage(message: Message) {
 	const student: Student | undefined = session.getStudent(userId);
 	const interaction = session.getSession(userId);
 
-	if (student === undefined) return;
+	if (student === undefined) {
+		console.log('DM from unknown student!');
+		return;
+	}
 
 	if (student.status === Status.IDLE) return;
 	if (student.status === Status.LISTEN_FOR_NAME) {

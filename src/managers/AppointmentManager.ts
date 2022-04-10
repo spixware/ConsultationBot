@@ -1,7 +1,15 @@
-import { Guild, GuildMember, VoiceChannel } from 'discord.js';
+import {
+	Guild,
+	GuildBasedChannel,
+	GuildMember,
+	GuildVoiceChannelResolvable,
+	VoiceChannel,
+} from 'discord.js';
 import moment from 'moment';
 import BookingManager, { Consultation } from './BookingManager';
 import Student, { Status } from '../entities/Student';
+import { AppliedProfs } from '../resources/AppliedProfs';
+import { joinRequestMenu } from '../MenuBuilder';
 
 class AppointmentManager {
 	constructor() {}
@@ -22,11 +30,77 @@ class AppointmentManager {
 	public initiate(guild: Guild) {
 		this._guild = guild;
 	}
-	public sendMoveRequest(userId: string, cons: Consultation) {
+	public sendMoveRequest(cons: Consultation) {
+		let profUserId = '';
+		console.log('Got a move Request from ' + cons.name + ' to ' + cons.prof);
+
+		if (cons.prof === AppliedProfs.Israel.name) {
+			profUserId = AppliedProfs.Israel.userId!;
+		} else if (cons.prof === AppliedProfs.Kleinen.name) {
+			profUserId = AppliedProfs.Kleinen.userId!;
+		} else if (cons.prof === AppliedProfs.Lenz.name) {
+			profUserId = AppliedProfs.Lenz.userId!;
+		} else {
+			profUserId = AppliedProfs.Wulff.userId!;
+		}
+		console.log(profUserId);
+
+		this._guild?.members.fetch().then((members) => {
+			const user = members.get(profUserId);
+			user?.send(joinRequestMenu(cons, this._guild));
+		});
+	}
+
+	public moveStudent(userId: string, cons: Consultation) {
+		if (cons === undefined) {
+			console.log('Appointment is not available any longer!');
+			return;
+		}
+
+		const user = this._guild?.members.cache.get(userId);
+		let channel: GuildBasedChannel | undefined;
+		if (cons.prof === AppliedProfs.Israel.name) {
+			channel = this._guild?.channels.cache.find(
+				(channel: GuildBasedChannel) =>
+					channel.name === AppliedProfs.Israel.office
+			);
+			console.log(
+				'Move request ' + cons.name + ' to ' + AppliedProfs.Israel.name
+			);
+		} else if (cons.prof === AppliedProfs.Kleinen.name) {
+			channel = this._guild?.channels.cache.find(
+				(channel: GuildBasedChannel) =>
+					channel.name === AppliedProfs.Kleinen.office
+			);
+			console.log(
+				'Move request ' + cons.name + ' to ' + AppliedProfs.Kleinen.name
+			);
+		} else if (cons.prof === AppliedProfs.Lenz.name) {
+			channel = this._guild?.channels.cache.find(
+				(channel: GuildBasedChannel) =>
+					channel.name === AppliedProfs.Lenz.office
+			);
+			console.log(
+				'Move request ' + cons.name + ' to ' + AppliedProfs.Lenz.name
+			);
+		} else if (cons.prof === AppliedProfs.Wulff.name) {
+			channel = this._guild?.channels.cache.find(
+				(channel: GuildBasedChannel) =>
+					channel.name === AppliedProfs.Wulff.office
+			);
+			console.log(
+				'Move request ' + cons.name + ' to ' + AppliedProfs.Wulff.name
+			);
+		}
+
+		user?.voice
+			.setChannel(channel as VoiceChannel)
+			.catch((err) => console.log(err));
+
+		// delete appointment data
+
 		const session = BookingManager.Instance;
-		const student = session.getStudent(userId);
-		console.log('moving ' + student!.name);
-		session.deleteAppointment(userId, student!.cache.time);
+		session.deleteAppointment(userId, cons.timestamp);
 		session.cancelSession(userId);
 	}
 
@@ -37,17 +111,12 @@ class AppointmentManager {
 			.members.forEach((member: GuildMember) => {
 				const ID = member.user.id;
 				const student = session.getStudent(ID);
+				const status = student?.status;
 				if (student !== undefined)
 					console.log(
-						member.user.tag +
-							' aka ' +
-							student?.name +
-							' ' +
-							student?.cache.professor +
-							' ' +
-							moment.unix(student!.cache.time)
+						member.user.tag + ' aka ' + student.name + ' ' + student.status
 					);
-				if (student !== undefined && student.status === Status.REGISTERED) {
+				if (student !== undefined && status === Status.REGISTERED) {
 					session.getAppointments(ID).forEach((appointment) => {
 						const now = moment();
 						const dateTime = moment.unix(appointment.timestamp);
@@ -66,7 +135,8 @@ class AppointmentManager {
 								);
 								// Send Request to Prof.
 								session.updateStudentStatus(ID, Status.WAITING);
-								AppointmentManager.Instance.sendMoveRequest(ID, appointment);
+								console.log('Student is now waiting');
+								AppointmentManager.Instance.sendMoveRequest(appointment);
 								return;
 							} else {
 								session.updateStudentStatus(ID, Status.REGISTERED);
@@ -85,19 +155,26 @@ class AppointmentManager {
 										timeMiss.asSeconds() +
 										' seconds ago! I will check, if the professor is still available. Take a seat!'
 								);
+								// Send request to professor
 								session.updateStudentStatus(ID, Status.WAITING);
-								AppointmentManager.Instance.sendMoveRequest(ID, appointment);
+								console.log('Student is now waiting');
+								AppointmentManager.Instance.sendMoveRequest(appointment);
 								return;
+							} else {
+								member.send(
+									'You missed your consultation! ' +
+										dateTime.format('Do MMMM YYYY HH:mm') +
+										' with ' +
+										appointment.prof
+								);
+								session.deleteAppointment(ID, appointment.timestamp);
 							}
 						}
-						member.send(
-							'You missed your consultation! ' +
-								dateTime.format('Do MMMM YYYY HH:mm') +
-								' ' +
-								appointment.prof
-						);
 						session.updateStudentStatus(ID, Status.FORM_COMPLETE);
 					});
+				} else if (status === Status.APPLIED) {
+					const consultation = session.getAppointments(ID)[0];
+					AppointmentManager.Instance.moveStudent(ID, consultation);
 				}
 			});
 	}

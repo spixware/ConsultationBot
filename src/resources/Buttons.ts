@@ -11,7 +11,7 @@ const Buttons = {
 	shiftMenu: buildButton('shift', 'Shift', 'PRIMARY'),
 	reminderMenu: buildButton('reminder', 'Reminder', 'PRIMARY'),
 	cancel: buildButton('cancel', 'Cancel', 'DANGER'),
-	checkMenu: buildButton('check', 'Check', 'PRIMARY'),
+	checkMenu: buildButton('check', 'Check your Appoinments', 'PRIMARY'),
 	instructionsMenu: buildButton('instructions', 'Instructions', 'PRIMARY'),
 	submit: buildButton('submit', 'Book Appointment', 'SUCCESS'),
 	profMenu: buildButton(
@@ -33,7 +33,7 @@ const Buttons = {
 	),
 };
 
-function buildButton(
+export function buildButton(
 	id: string,
 	label: string,
 	style: MessageButtonStyleResolvable

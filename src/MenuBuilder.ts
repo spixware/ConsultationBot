@@ -1,9 +1,14 @@
-import { MessageEmbed, MessageActionRow } from 'discord.js';
+import {
+	MessageEmbed,
+	MessageActionRow,
+	MessageMentions,
+	Guild,
+} from 'discord.js';
 import moment from 'moment';
 import { Emoticons } from './resources/Emoticons';
-import BookingManager from './managers/BookingManager';
+import BookingManager, { Consultation } from './managers/BookingManager';
 import Student, { Status } from './entities/Student';
-import Buttons from './resources/Buttons';
+import Buttons, { buildButton } from './resources/Buttons';
 
 const session = BookingManager.Instance;
 
@@ -43,7 +48,11 @@ export function buildMainMenu() {
 					'Create or delete reminder, so I can inform you about upcomming appointments.',
 			}
 		);
-	const row = new MessageActionRow().addComponents(Buttons.start);
+	const row = new MessageActionRow().addComponents(
+		Buttons.start,
+		Buttons.checkMenu,
+		Buttons.instructionsMenu
+	);
 
 	return {
 		embeds: [embed],
@@ -69,6 +78,52 @@ export function buildStartMenu() {
 	return {
 		embeds: [embed],
 		components: [row],
+	};
+}
+
+export function buildInstructionsMenu() {
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle('Instructions')
+		.setDescription(
+			'That is all you need to know, to get an successful appointment with your professor.'
+		)
+		.addFields(
+			{
+				name: 'Step 1. Book a consultation appointment',
+				value:
+					'Go back to the studentboard @Yzi World discord server and start the booking process by using the "Start Booking" - button ',
+			},
+			{
+				name: 'Step 2. Provide a few details',
+				value:
+					'You will get a message from me in direct chat. Enter the information I ask for in chat or choose from dedicated options.',
+			},
+			{
+				name: 'Step 3. Check your provided information',
+				value:
+					'At the end you can check and adjust any information that you provided.',
+			},
+			{
+				name: 'Step 4. Submit your consultation appointment',
+				value:
+					'Easy task, just press the green "Submit" - button. (you cannot get that wrong, can you?)',
+			},
+			{
+				name: 'Step 5. Join the "Waiting Room" @Yzi World',
+				value:
+					'On the day of your appointment, please be in time approximately 5 minutes before your appointment starts. If you are more than 5 minutes late, the appointment gets canceled.',
+			},
+			{
+				name: 'Step 6. Ready for take off!',
+				value:
+					'If you made it in time, I will inform the professor that you are waiting. When the professor is ready, I will move you to his/her office channel.',
+			}
+		);
+
+	return {
+		embeds: [embed],
+		components: [],
 	};
 }
 
@@ -104,7 +159,7 @@ export function buildRequestMenu(userId: string) {
 		Buttons.provideMatrNumber
 	);
 
-	if (student?.status === Status.FORM_COMPLETE) {
+	if (student.name !== '' && student.matrNum !== '') {
 		row.addComponents(Buttons.continue);
 	}
 
@@ -381,10 +436,43 @@ export function buildCheckMenu(userId: string) {
 	};
 }
 
+export function joinRequestMenu(cons: Consultation, guild: Guild | undefined) {
+	const member = guild?.members.cache.get(cons.id);
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle('A new attendant is waiting to join!')
+		.addFields(
+			{
+				name: 'Name',
+				value: cons.name,
+			},
+			{
+				name: 'Student ID',
+				value: cons.matrNum,
+			},
+			{
+				name: 'Appointment',
+				value:
+					moment.unix(cons.timestamp).format('Do MMMM YYYY') +
+					' at ' +
+					moment.unix(cons.timestamp).format('HH:mm'),
+			}
+		);
+
+	const customButton = buildButton(cons.id, 'Come in!', 'SUCCESS');
+	const row = new MessageActionRow().addComponents(customButton);
+
+	return {
+		content: member!.user.tag,
+		embeds: [embed],
+		components: [row],
+	};
+}
+
 export function refreshMenu(userId: string) {
 	let status = session.getStudent(userId)?.status;
 	let menu = buildStartMenu();
-	if (status === Status.FORM_COMPLETE) {
+	if (status === Status.FORM_COMPLETE || status === Status.CACHE_COMPLETE) {
 		menu = buildRequestMenu(userId);
 	} else if (
 		status === Status.LISTEN_FOR_TIME ||

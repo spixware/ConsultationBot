@@ -16,6 +16,8 @@ const { Client, Intents } = require('discord.js');
 const client = new Client({
 	intents: [
 		Intents.FLAGS.GUILDS,
+		Intents.FLAGS.GUILD_PRESENCES,
+		Intents.FLAGS.GUILD_MEMBERS,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.GUILD_VOICE_STATES,
 		Intents.FLAGS.DIRECT_MESSAGES,
@@ -45,7 +47,7 @@ client.on('messageCreate', async (message) => {
 
 client.on('interactionCreate', async (interaction) => {
 	if (interaction.isButton()) {
-		handleButtonInteraction(interaction);
+		handleButtonInteraction(interaction, guild);
 		return;
 	}
 
@@ -57,19 +59,5 @@ client.on('interactionCreate', async (interaction) => {
 	console.log('Got undefined interaction:', interaction.type);
 	return;
 });
-
-// client.on('voiceStateUpdate', async (oldState, newState) => {
-// 	if (oldState.name !== 'Waiting Room' && newState.channelId !== null) {
-// 		const id = newState.id;
-// 		const user = guild.members.cache.get(id);
-// 		if (user !== undefined && user.voice.channel.name === 'Waiting Room') {
-// 			let channel = guild.channels.cache.find(
-// 				(channel) => channel.name === 'test'
-// 			);
-// 			user.send('Hello, I will move you!');
-// 			user.voice.setChannel(channel).catch((err) => console.log(err));
-// 		}
-// 	}
-// });
 
 client.login(process.env.CLIENT_TOKEN);

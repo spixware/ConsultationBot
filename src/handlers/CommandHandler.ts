@@ -22,12 +22,15 @@ export async function handleCommandInteraction(
 			interaction.deferReply();
 			console.log('gonna clean up');
 			const channel = interaction.channel;
-			await channel!.messages.fetch().then((fetched) =>
-				fetched.forEach((msg) => {
-					console.log('removing: ' + msg);
-					msg.delete();
-				})
-			);
+			await channel!.messages
+				.fetch()
+				.then((fetched) =>
+					fetched.forEach((msg) => {
+						console.log('removing: ' + msg);
+						msg.delete();
+					})
+				)
+				.catch((err) => console.error(err));
 			console.log('done');
 			interaction.deleteReply();
 			break;

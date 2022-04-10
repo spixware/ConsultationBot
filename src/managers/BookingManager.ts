@@ -28,7 +28,7 @@ class BookingManager {
 
 	public cancelSession(userId: string) {
 		this.activeSessions.delete(userId);
-		this.students.delete(userId);
+		//this.students.delete(userId);
 	}
 
 	public getSession(userId: string): ButtonInteraction | undefined {
@@ -54,10 +54,9 @@ class BookingManager {
 
 	public submitAppointment(userId: string) {
 		let student = this.getStudent(userId);
-		console.log(student);
 
 		if (student === undefined) {
-			console.log('Session not found');
+			console.log('Student not found');
 			return;
 		}
 
@@ -68,6 +67,15 @@ class BookingManager {
 			name: student.name,
 			matrNum: student.matrNum,
 		});
+		console.log(
+			'Booked Appointment from ' +
+				student.name +
+				' with ' +
+				student.cache.professor +
+				' at ' +
+				moment.unix(student.cache.time).format('Do MMMM YYYY HH:mm')
+		);
+
 		this.updateStudentStatus(userId, Status.REGISTERED);
 		student.clearCache();
 	}

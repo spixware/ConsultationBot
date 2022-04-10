@@ -1,4 +1,9 @@
-import { ButtonInteraction, MessageActionRow } from 'discord.js';
+import {
+	ButtonInteraction,
+	Guild,
+	MessageActionRow,
+	VoiceChannel,
+} from 'discord.js';
 import {
 	buildAppointmentMenu,
 	buildRequestMatrNumMenu,
@@ -10,13 +15,18 @@ import {
 	buildRequestDateMenu,
 	buildCheckMenu,
 	buildAppointmentSuccessfulMenu,
+	buildInstructionsMenu,
 } from '../MenuBuilder';
 import BookingManager from '../managers/BookingManager';
 import { Status } from '../entities/Student';
 
 const session: BookingManager = BookingManager.Instance;
 
-export async function handleButtonInteraction(interaction: ButtonInteraction) {
+export async function handleButtonInteraction(
+	interaction: ButtonInteraction,
+	guild: Guild
+) {
+	interaction.user.createDM();
 	const buttonId = interaction.customId;
 	const userId = interaction.user.id;
 	const sessionExists = session.isActive(userId);
@@ -28,7 +38,11 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			if (sessionExists) {
 				session.cancelSession(userId);
 			}
-			if (student?.status === Status.FORM_COMPLETE) {
+			if (
+				status === Status.FORM_COMPLETE ||
+				status === Status.CACHE_COMPLETE ||
+				status === Status.REGISTERED
+			) {
 				menu = buildRequestMenu(userId);
 			} else {
 				menu = buildStartMenu();
@@ -38,7 +52,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			interaction.deleteReply();
 			break;
 		case 'continue':
-			if (status === Status.FORM_COMPLETE) {
+			if (status === Status.FORM_COMPLETE || status === Status.REGISTERED) {
 				menu = buildAppointmentMenu(userId);
 			} else if (status === Status.CACHE_COMPLETE) {
 				menu = buildCheckMenu(userId);
@@ -48,7 +62,15 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			if (!sessionExists) session.startSession(userId, interaction);
 			interaction.update(menu);
 			break;
-
+		case 'check':
+			interaction.user.send('Not implemented yet.');
+			break;
+		case 'instructions':
+			menu = buildInstructionsMenu();
+			interaction.user.send(menu);
+			interaction.deferReply();
+			interaction.deleteReply();
+			break;
 		case 'submit':
 			if (status === Status.CACHE_COMPLETE) {
 				menu = buildAppointmentSuccessfulMenu(userId);
@@ -116,6 +138,23 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 		case 'dateTime':
 			interaction.update(buildRequestDateMenu(userId));
 			session.updateStudentStatus(userId, Status.LISTEN_FOR_DATE);
+			break;
+		default:
+			menu = {
+				content: 'Student will be moved!',
+				components: [],
+				embeds: [],
+			};
+			const user = guild.members.cache.get(buttonId);
+			if (user !== undefined) {
+				user.send(
+					'The professor has now time for you. You will be moved shortly!'
+				);
+				session.updateStudentStatus(buttonId, Status.APPLIED);
+			} else {
+				menu.content = 'Student left the Server!';
+			}
+			interaction.update(menu);
 			break;
 	}
 }
