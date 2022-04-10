@@ -1,6 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import moment from 'moment';
-import Student, { Status } from './Student';
+import Student, { Status } from '../entities/Student';
 
 export type Consultation = {
 	timestamp: number;
@@ -54,12 +54,13 @@ class SessionManager {
 
 	public submitAppointment(userId: string) {
 		let student = this.getStudent(userId);
+		console.log(student);
+
 		if (student === undefined) {
 			console.log('Session not found');
 			return;
 		}
 
-		student.submitAppointment();
 		this.appointments.push({
 			timestamp: student.cache.time,
 			prof: student.cache.professor,
@@ -67,6 +68,14 @@ class SessionManager {
 			name: student.name,
 			matrNum: student.matrNum,
 		});
+		this.updateStudentStatus(userId, Status.REGISTERED);
+		student.clearCache();
+	}
+
+	public deleteAppointment(userId: string, timestamp: number) {
+		this.appointments = this.appointments.filter(
+			(app) => app.id !== userId && app.timestamp === timestamp
+		);
 	}
 
 	public getAppointments(userId: string) {
@@ -79,6 +88,7 @@ class SessionManager {
 		collector.sort((a, b) => {
 			return a.timestamp - b.timestamp;
 		});
+
 		return collector;
 	}
 

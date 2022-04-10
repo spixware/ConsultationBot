@@ -11,8 +11,8 @@ import {
 	buildCheckMenu,
 	buildAppointmentSuccessfulMenu,
 } from '../MenuBuilder';
-import SessionManager from '../SessionManager';
-import { Status } from '../Student';
+import SessionManager from '../managers/SessionManager';
+import { Status } from '../entities/Student';
 
 const session: SessionManager = SessionManager.Instance;
 
@@ -25,6 +25,9 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 	let menu;
 	switch (buttonId) {
 		case 'start':
+			if (sessionExists) {
+				session.cancelSession(userId);
+			}
 			if (student?.status === Status.FORM_COMPLETE) {
 				menu = buildRequestMenu(userId);
 			} else {
@@ -42,6 +45,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			} else {
 				menu = refreshMenu(userId);
 			}
+			if (!sessionExists) session.startSession(userId, interaction);
 			interaction.update(menu);
 			break;
 
@@ -51,6 +55,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			} else {
 				menu = refreshMenu(userId);
 			}
+			session.submitAppointment(userId);
 			interaction.update(menu);
 			break;
 		case 'backwards':
@@ -89,7 +94,7 @@ export async function handleButtonInteraction(interaction: ButtonInteraction) {
 			interaction.update(menu);
 			break;
 		case 'p_israel':
-			student?.cacheProf('Prof. Dr. Habakuk Israel');
+			student?.cacheProf('Prof. Dr. Johann H. Israel');
 			interaction.update(buildAppointmentMenu(userId));
 			break;
 		case 'p_wulff':

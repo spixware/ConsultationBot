@@ -1,4 +1,4 @@
-export const emoticons = {
+export const Emoticons = {
 	PARTY_POPPER: '🎉',
 	WRITING: '📝',
 	PROF: '🤓',

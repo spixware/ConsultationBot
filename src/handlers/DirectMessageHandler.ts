@@ -5,8 +5,8 @@ import {
 	buildRequestTimeMenu,
 	refreshMenu,
 } from '../MenuBuilder';
-import SessionManager from '../SessionManager';
-import Student, { Status } from '../Student';
+import SessionManager from '../managers/SessionManager';
+import Student, { Status } from '../entities/Student';
 import moment from 'moment';
 
 const session = SessionManager.Instance;

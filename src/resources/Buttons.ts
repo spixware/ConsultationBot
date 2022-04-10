@@ -1,11 +1,11 @@
 import { MessageButton, MessageButtonStyleResolvable } from 'discord.js';
-import { emoticons } from './emoticons';
+import { Emoticons } from './Emoticons';
 
-const BUTTONS = {
+const Buttons = {
 	start: buildButton('start', 'Start Booking', 'PRIMARY'),
 	continue: buildButton('continue', 'Continue', 'SUCCESS'),
-	navBack: buildButton('backwards', emoticons.LEFT_ARROW, 'SECONDARY'),
-	navFor: buildButton('forwards', emoticons.RIGHT_ARROW, 'SECONDARY'),
+	navBack: buildButton('backwards', Emoticons.LEFT_ARROW, 'SECONDARY'),
+	navFor: buildButton('forwards', Emoticons.RIGHT_ARROW, 'SECONDARY'),
 	provideName: buildButton('name', 'Enter Name', 'PRIMARY'),
 	provideMatrNumber: buildButton('matrNum', 'Enter Student ID', 'PRIMARY'),
 	shiftMenu: buildButton('shift', 'Shift', 'PRIMARY'),
@@ -16,7 +16,7 @@ const BUTTONS = {
 	submit: buildButton('submit', 'Book Appointment', 'SUCCESS'),
 	profMenu: buildButton(
 		'prof',
-		'Select Professor ' + emoticons.PROF,
+		'Select Professor ' + Emoticons.PROF,
 		'PRIMARY'
 	),
 	profs: [
@@ -28,7 +28,7 @@ const BUTTONS = {
 
 	dateTime: buildButton(
 		'dateTime',
-		'Enter Date & Time' + emoticons.CALENDAR,
+		'Enter Date & Time' + Emoticons.CALENDAR,
 		'PRIMARY'
 	),
 };
@@ -41,4 +41,4 @@ function buildButton(
 	return new MessageButton().setCustomId(id).setLabel(label).setStyle(style);
 }
 
-export default BUTTONS;
+export default Buttons;

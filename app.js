@@ -1,12 +1,12 @@
 'use strict';
 require('dotenv').config();
-import AppointmentManager from './src/AppointmentManager';
-import { registerCommands } from './src/commandsUtil.ts';
-import { handleButtonInteraction } from './src/handler/ButtonHandler';
-import { handleCommandInteraction } from './src/handler/CommandHandler';
-import { handleDirectMessage } from './src/handler/DirectMessageHandler';
-import SessionManager from './src/SessionManager';
-import { mockAppointment } from './src/utils.ts';
+import AppointmentManager from './src/managers/AppointmentManager';
+import { registerCommands } from './src/utils/commandUtils.ts';
+import { handleButtonInteraction } from './src/handlers/ButtonHandler';
+import { handleCommandInteraction } from './src/handlers/CommandHandler';
+import { handleDirectMessage } from './src/handlers/DirectMessageHandler';
+import SessionManager from './src/managers/SessionManager';
+import { mockAppointment } from './src/utils/generalUtils.ts';
 
 //registerCommands();
 mockAppointment();

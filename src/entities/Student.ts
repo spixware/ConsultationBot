@@ -9,6 +9,7 @@ export enum Status {
 	'CACHE_COMPLETE',
 	'REGISTERED',
 	'WAITING',
+	'APPLIED',
 }
 
 type Appointment = {
@@ -23,15 +24,15 @@ class Student {
 		this._name = '';
 		this._userName = '';
 		this._matrNum = '';
+		this._cache = { professor: '', time: 0 };
 	}
 
-	private _calendar: Array<Appointment> = [];
 	private userId: string;
 	private _status: Status;
 	private _name: string;
 	private _matrNum: string;
 	private _userName: string;
-	private _cache: Appointment = { professor: '', time: 0 };
+	private _cache: Appointment;
 	private _scrollWidth: number = 0;
 
 	public set name(name: string) {
@@ -67,9 +68,11 @@ class Student {
 	public get cache(): Appointment {
 		return this._cache;
 	}
-	public get calendar(): Array<Appointment> {
-		return this._calendar;
+
+	public clearCache(): void {
+		this._cache = { professor: '', time: 0 };
 	}
+
 	public cacheProf(prof: string) {
 		this._cache.professor = prof;
 		if (this._cache.time !== 0) this._status = Status.CACHE_COMPLETE;
@@ -79,14 +82,6 @@ class Student {
 		this._cache.time = time;
 		if (this._cache.professor !== '') this._status = Status.CACHE_COMPLETE;
 		else this._status = Status.LISTEN_FOR_PROF;
-	}
-	public submitAppointment() {
-		if (this._cache.professor !== undefined && this._cache.time !== undefined) {
-			console.log(this._cache);
-			this._status = Status.REGISTERED;
-			this._calendar.push(this._cache);
-			this._cache = { professor: '', time: 0 };
-		}
 	}
 }
 

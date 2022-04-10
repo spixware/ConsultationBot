@@ -1,9 +1,9 @@
 import { MessageEmbed, MessageActionRow } from 'discord.js';
 import moment from 'moment';
-import BUTTONS from './Buttons';
-import { emoticons } from './emoticons';
-import SessionManager from './SessionManager';
-import Student, { Status } from './Student';
+import { Emoticons } from './resources/Emoticons';
+import SessionManager from './managers/SessionManager';
+import Student, { Status } from './entities/Student';
+import Buttons from './resources/Buttons';
 
 const session = SessionManager.Instance;
 
@@ -43,7 +43,7 @@ export function buildMainMenu() {
 					'Create or delete reminder, so I can inform you about upcomming appointments.',
 			}
 		);
-	const row = new MessageActionRow().addComponents(BUTTONS.start);
+	const row = new MessageActionRow().addComponents(Buttons.start);
 
 	return {
 		embeds: [embed],
@@ -62,8 +62,8 @@ export function buildStartMenu() {
 		});
 
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.provideName,
-		BUTTONS.provideMatrNumber
+		Buttons.provideName,
+		Buttons.provideMatrNumber
 	);
 
 	return {
@@ -87,25 +87,25 @@ export function buildRequestMenu(userId: string) {
 				name: 'Name:',
 				value:
 					student !== undefined && student.name !== ''
-						? student.name + ' ' + emoticons.CHECK
-						: 'No name provided yet. ' + emoticons.EMPTY,
+						? student.name + ' ' + Emoticons.CHECK
+						: 'No name provided yet. ' + Emoticons.EMPTY,
 			},
 			{
 				name: 'Matriculation Number:',
 				value:
 					student !== undefined && student.matrNum !== ''
-						? student.matrNum + ' ' + emoticons.CHECK
-						: 'No matricuation number provided yet. ' + emoticons.EMPTY,
+						? student.matrNum + ' ' + Emoticons.CHECK
+						: 'No matricuation number provided yet. ' + Emoticons.EMPTY,
 			}
 		);
 
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.provideName,
-		BUTTONS.provideMatrNumber
+		Buttons.provideName,
+		Buttons.provideMatrNumber
 	);
 
 	if (student?.status === Status.FORM_COMPLETE) {
-		row.addComponents(BUTTONS.continue);
+		row.addComponents(Buttons.continue);
 	}
 
 	return {
@@ -120,9 +120,9 @@ export function buildRequestNameMenu() {
 		.setTitle('Enter your Name')
 		.addFields({
 			name: 'Please tell me your name!',
-			value: emoticons.WRITING,
+			value: Emoticons.WRITING,
 		});
-	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	const row = new MessageActionRow().addComponents(Buttons.cancel);
 	return {
 		embeds: [embed],
 		components: [row],
@@ -135,9 +135,9 @@ export function buildRequestMatrNumMenu() {
 		.setTitle('Enter your matriculation number!')
 		.addFields({
 			name: 'Please tell me your matriculation number!',
-			value: emoticons.WRITING,
+			value: Emoticons.WRITING,
 		});
-	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	const row = new MessageActionRow().addComponents(Buttons.cancel);
 	return {
 		embeds: [embed],
 		components: [row],
@@ -157,30 +157,30 @@ export function buildAppointmentMenu(userId: string) {
 		.addFields(
 			{
 				name:
-					emoticons.PROF + ' The professor that you have an appointment with: ',
+					Emoticons.PROF + ' The professor that you have an appointment with: ',
 				value:
 					prof !== ''
-						? prof + ' ' + emoticons.CHECK
-						: 'No prof selected ' + emoticons.EMPTY,
+						? prof + ' ' + Emoticons.CHECK
+						: 'No prof selected ' + Emoticons.EMPTY,
 			},
 			{
-				name: emoticons.CALENDAR + ' The time and date of the appointment: ',
+				name: Emoticons.CALENDAR + ' The time and date of the appointment: ',
 				value:
 					time !== 0
 						? moment.unix(time).format('DD-MMMM-YYYY HH:mm') +
 						  ' ' +
-						  emoticons.CHECK
-						: 'No time and date selected ' + emoticons.EMPTY,
+						  Emoticons.CHECK
+						: 'No time and date selected ' + Emoticons.EMPTY,
 			}
 		);
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.profMenu,
-		BUTTONS.dateTime,
-		BUTTONS.cancel
+		Buttons.profMenu,
+		Buttons.dateTime,
+		Buttons.cancel
 	);
 
 	if (student.status === Status.CACHE_COMPLETE)
-		row.addComponents(BUTTONS.continue);
+		row.addComponents(Buttons.continue);
 
 	return {
 		embeds: [embed],
@@ -205,14 +205,9 @@ export function buildAppointmentSuccessfulMenu(userId: string) {
 		)
 		.addFields({
 			name:
-				'You have an appoitment with ' +
-				student.cache.professor +
-				' on ' +
-				date +
-				' at ' +
-				time,
+				'You have an appoitment with ' + prof + ' on ' + date + ' at ' + time,
 			value:
-				'Use the main menu on the server for further options and instrucations!',
+				'Use the main menu on the server for further options and instructions!',
 		});
 
 	if (student.status === Status.CACHE_COMPLETE)
@@ -238,18 +233,18 @@ export function buildRequestProfMenu(userId: string) {
 			name: 'Choose your professor!',
 			value:
 				' Use ' +
-				emoticons.LEFT_ARROW +
+				Emoticons.LEFT_ARROW +
 				' and ' +
-				emoticons.RIGHT_ARROW +
+				Emoticons.RIGHT_ARROW +
 				' to navigate!',
 		});
 
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.navBack,
-		BUTTONS.profs[scrollWidth].selectProf,
-		BUTTONS.profs[scrollWidth + 1].selectProf,
-		BUTTONS.profs[scrollWidth + 2].selectProf,
-		BUTTONS.navFor
+		Buttons.navBack,
+		Buttons.profs[scrollWidth].selectProf,
+		Buttons.profs[scrollWidth + 1].selectProf,
+		Buttons.profs[scrollWidth + 2].selectProf,
+		Buttons.navFor
 	);
 	return {
 		embeds: [embed],
@@ -268,23 +263,23 @@ export function buildTimeDateMenu(userId: string) {
 		.setTitle('Time & Date Information')
 		.addFields(
 			{
-				name: emoticons.CALENDAR + ' Date:',
+				name: Emoticons.CALENDAR + ' Date:',
 				value:
 					time !== 0
-						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
-						: 'No date selected ' + emoticons.EMPTY,
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + Emoticons.CHECK
+						: 'No date selected ' + Emoticons.EMPTY,
 			},
 			{
-				name: emoticons.CLOCK + ' Time:',
+				name: Emoticons.CLOCK + ' Time:',
 				value:
 					time !== 0
-						? moment.unix(time).format('HH:mm') + emoticons.CHECK
-						: 'No time selected ' + emoticons.EMPTY,
+						? moment.unix(time).format('HH:mm') + Emoticons.CHECK
+						: 'No time selected ' + Emoticons.EMPTY,
 			}
 		);
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.cancel,
-		BUTTONS.continue
+		Buttons.cancel,
+		Buttons.continue
 	);
 	return {
 		embeds: [embed],
@@ -303,18 +298,18 @@ export function buildRequestTimeMenu(userId: string) {
 		.setTitle("Enter Time like '14:30'")
 		.addFields(
 			{
-				name: emoticons.CLOCK + ' Time:',
-				value: 'No time selected ' + emoticons.EMPTY,
+				name: Emoticons.CLOCK + ' Time:',
+				value: 'No time selected ' + Emoticons.EMPTY,
 			},
 			{
-				name: emoticons.CALENDAR + ' Date:',
+				name: Emoticons.CALENDAR + ' Date:',
 				value:
 					time !== 0
-						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
-						: 'No date selected ' + emoticons.EMPTY,
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + Emoticons.CHECK
+						: 'No date selected ' + Emoticons.EMPTY,
 			}
 		);
-	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	const row = new MessageActionRow().addComponents(Buttons.cancel);
 	return {
 		embeds: [embed],
 		components: [row],
@@ -328,17 +323,17 @@ export function buildRequestDateMenu(userId: string) {
 		.setColor('#0099ff')
 		.setTitle("Enter Date like 'DD-MM-YYYY'")
 		.addFields({
-			name: emoticons.CALENDAR + ' Date:',
+			name: Emoticons.CALENDAR + ' Date:',
 			value:
 				time !== 0
-					? emoticons.CALENDAR +
+					? Emoticons.CALENDAR +
 					  ' ' +
 					  moment.unix(time!).format('"Do-MMMM-YYYY"') +
 					  ' ' +
-					  emoticons.CHECK
-					: 'No date selected ' + emoticons.EMPTY,
+					  Emoticons.CHECK
+					: 'No date selected ' + Emoticons.EMPTY,
 		});
-	const row = new MessageActionRow().addComponents(BUTTONS.cancel);
+	const row = new MessageActionRow().addComponents(Buttons.cancel);
 	return {
 		embeds: [embed],
 		components: [row],
@@ -354,31 +349,31 @@ export function buildCheckMenu(userId: string) {
 		.setTitle('Check your Stats')
 		.addFields(
 			{
-				name: emoticons.CALENDAR + ' Date:',
+				name: Emoticons.CALENDAR + ' Date:',
 				value:
 					time !== 0
-						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + emoticons.CHECK
-						: 'No date selected ' + emoticons.EMPTY,
+						? moment.unix(time).format('Do-MMMM-YYYY') + ' ' + Emoticons.CHECK
+						: 'No date selected ' + Emoticons.EMPTY,
 			},
 			{
-				name: emoticons.CLOCK + ' Time:',
+				name: Emoticons.CLOCK + ' Time:',
 				value:
 					time !== 0
-						? moment.unix(time).format('HH:mm') + ' ' + emoticons.CHECK
-						: 'No time selected ' + emoticons.EMPTY,
+						? moment.unix(time).format('HH:mm') + ' ' + Emoticons.CHECK
+						: 'No time selected ' + Emoticons.EMPTY,
 			},
 			{
 				name:
-					emoticons.PROF + ' The professor that you have an appointment with: ',
+					Emoticons.PROF + ' The professor that you have an appointment with: ',
 				value:
 					prof !== ''
-						? prof + ' ' + emoticons.CHECK
-						: 'No prof selected ' + emoticons.EMPTY,
+						? prof + ' ' + Emoticons.CHECK
+						: 'No prof selected ' + Emoticons.EMPTY,
 			}
 		);
 	const row = new MessageActionRow().addComponents(
-		BUTTONS.cancel,
-		BUTTONS.submit
+		Buttons.cancel,
+		Buttons.submit
 	);
 	return {
 		embeds: [embed],
