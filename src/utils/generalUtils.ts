@@ -1,6 +1,6 @@
 import { ButtonInteraction } from 'discord.js';
 import moment from 'moment';
-import BookingManager from '../managers/SessionManager';
+import BookingManager from '../managers/BookingManager';
 import Student, { Status } from '../entities/Student';
 
 const session = BookingManager.Instance;

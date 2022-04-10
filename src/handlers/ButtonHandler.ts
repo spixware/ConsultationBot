@@ -11,7 +11,7 @@ import {
 	buildCheckMenu,
 	buildAppointmentSuccessfulMenu,
 } from '../MenuBuilder';
-import BookingManager from '../managers/SessionManager';
+import BookingManager from '../managers/BookingManager';
 import { Status } from '../entities/Student';
 
 const session: BookingManager = BookingManager.Instance;

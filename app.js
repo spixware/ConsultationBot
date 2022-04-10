@@ -5,7 +5,7 @@ import { registerCommands } from './src/utils/commandUtils.ts';
 import { handleButtonInteraction } from './src/handlers/ButtonHandler';
 import { handleCommandInteraction } from './src/handlers/CommandHandler';
 import { handleDirectMessage } from './src/handlers/DirectMessageHandler';
-import BookingManager from './src/managers/SessionManager';
+import BookingManager from './src/managers/BookingManager';
 import { mockAppointment } from './src/utils/generalUtils.ts';
 
 //registerCommands();

@@ -5,7 +5,7 @@ import {
 	buildRequestTimeMenu,
 	refreshMenu,
 } from '../MenuBuilder';
-import BookingManager from '../managers/SessionManager';
+import BookingManager from '../managers/BookingManager';
 import Student, { Status } from '../entities/Student';
 import moment from 'moment';
 

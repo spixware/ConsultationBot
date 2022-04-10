@@ -1,6 +1,6 @@
 import { Guild, GuildMember, VoiceChannel } from 'discord.js';
 import moment from 'moment';
-import BookingManager, { Consultation } from './SessionManager';
+import BookingManager, { Consultation } from './BookingManager';
 import Student, { Status } from '../entities/Student';
 
 class AppointmentManager {
