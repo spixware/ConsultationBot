@@ -10,9 +10,9 @@ export type Consultation = {
 	matrNum: string;
 };
 
-class SessionManager {
+class BookingManager {
 	private constructor() {}
-	private static _instance: SessionManager;
+	private static _instance: BookingManager;
 	public static get Instance() {
 		return this._instance || (this._instance = new this());
 	}
@@ -98,4 +98,4 @@ class SessionManager {
 	}
 }
 
-export default SessionManager;
+export default BookingManager;

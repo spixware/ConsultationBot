@@ -1,6 +1,6 @@
 import { Guild, GuildMember, VoiceChannel } from 'discord.js';
 import moment from 'moment';
-import SessionManager, { Consultation } from './SessionManager';
+import BookingManager, { Consultation } from './SessionManager';
 import Student, { Status } from '../entities/Student';
 
 class AppointmentManager {
@@ -23,7 +23,7 @@ class AppointmentManager {
 		this._guild = guild;
 	}
 	public sendMoveRequest(userId: string, cons: Consultation) {
-		const session = SessionManager.Instance;
+		const session = BookingManager.Instance;
 		const student = session.getStudent(userId);
 		console.log('moving ' + student!.name);
 		session.deleteAppointment(userId, student!.cache.time);
@@ -31,7 +31,7 @@ class AppointmentManager {
 	}
 
 	private watchInstructions(guild: { channels: { cache: any[] } }): void {
-		const session = SessionManager.Instance;
+		const session = BookingManager.Instance;
 		guild.channels.cache
 			.find((channel: VoiceChannel) => channel.name === 'Waiting Room')
 			.members.forEach((member: GuildMember) => {

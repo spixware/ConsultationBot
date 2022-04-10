@@ -1,9 +1,9 @@
 import { ButtonInteraction } from 'discord.js';
 import moment from 'moment';
-import SessionManager from '../managers/SessionManager';
+import BookingManager from '../managers/SessionManager';
 import Student, { Status } from '../entities/Student';
 
-const session = SessionManager.Instance;
+const session = BookingManager.Instance;
 
 export function mockAppointment() {
 	const userId = process.env.USER_ID;

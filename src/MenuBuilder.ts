@@ -1,11 +1,11 @@
 import { MessageEmbed, MessageActionRow } from 'discord.js';
 import moment from 'moment';
 import { Emoticons } from './resources/Emoticons';
-import SessionManager from './managers/SessionManager';
+import BookingManager from './managers/SessionManager';
 import Student, { Status } from './entities/Student';
 import Buttons from './resources/Buttons';
 
-const session = SessionManager.Instance;
+const session = BookingManager.Instance;
 
 export function buildMainMenu() {
 	const embed = new MessageEmbed()

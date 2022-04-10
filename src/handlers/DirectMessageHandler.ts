@@ -5,11 +5,11 @@ import {
 	buildRequestTimeMenu,
 	refreshMenu,
 } from '../MenuBuilder';
-import SessionManager from '../managers/SessionManager';
+import BookingManager from '../managers/SessionManager';
 import Student, { Status } from '../entities/Student';
 import moment from 'moment';
 
-const session = SessionManager.Instance;
+const session = BookingManager.Instance;
 export async function handleDirectMessage(message: Message) {
 	const userId = message.author.id;
 	const student: Student | undefined = session.getStudent(userId);

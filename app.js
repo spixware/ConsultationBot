@@ -5,7 +5,7 @@ import { registerCommands } from './src/utils/commandUtils.ts';
 import { handleButtonInteraction } from './src/handlers/ButtonHandler';
 import { handleCommandInteraction } from './src/handlers/CommandHandler';
 import { handleDirectMessage } from './src/handlers/DirectMessageHandler';
-import SessionManager from './src/managers/SessionManager';
+import BookingManager from './src/managers/SessionManager';
 import { mockAppointment } from './src/utils/generalUtils.ts';
 
 //registerCommands();
@@ -22,7 +22,7 @@ const client = new Client({
 	],
 });
 
-const session = SessionManager.Instance;
+const session = BookingManager.Instance;
 const appointmentManager = AppointmentManager.Instance;
 let guild;
 

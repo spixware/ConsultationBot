@@ -11,10 +11,10 @@ import {
 	buildCheckMenu,
 	buildAppointmentSuccessfulMenu,
 } from '../MenuBuilder';
-import SessionManager from '../managers/SessionManager';
+import BookingManager from '../managers/SessionManager';
 import { Status } from '../entities/Student';
 
-const session: SessionManager = SessionManager.Instance;
+const session: BookingManager = BookingManager.Instance;
 
 export async function handleButtonInteraction(interaction: ButtonInteraction) {
 	const buttonId = interaction.customId;
