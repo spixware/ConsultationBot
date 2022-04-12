@@ -33,6 +33,7 @@ client.on('ready', () => {
 	guild = client.guilds.cache.get(process.env.GUILD_ID);
 	appointmentManager.initiate(guild);
 	appointmentManager.observeWaitingRoom();
+	appointmentManager.startNotificationAgent();
 });
 
 client.on('messageCreate', async (message) => {

@@ -2,18 +2,18 @@ import {
 	Guild,
 	GuildBasedChannel,
 	GuildMember,
-	GuildVoiceChannelResolvable,
 	VoiceChannel,
 } from 'discord.js';
 import moment from 'moment';
 import BookingManager, { Consultation } from './BookingManager';
-import Student, { Status } from '../entities/Student';
+import { Status } from '../entities/Student';
 import { AppliedProfs } from '../resources/AppliedProfs';
 import { joinRequestMenu } from '../MenuBuilder';
 
 class AppointmentManager {
 	constructor() {}
 	private _agent: NodeJS.Timer | number | undefined;
+	private _notifier: NodeJS.Timer | number | undefined;
 	private _guild: Guild | undefined;
 	private static _instance: AppointmentManager;
 	public static get Instance() {
@@ -21,10 +21,13 @@ class AppointmentManager {
 	}
 
 	public observeWaitingRoom() {
-		let guild = this._guild;
-
 		// set interval to watch waiting room
-		this._agent = setInterval(this.watchInstructions, 10000, guild);
+		this._agent = setInterval(this.watchInstructions, 10000, this._guild);
+	}
+
+	public startNotificationAgent() {
+		// start checking if user needs to be notified
+		this._notifier = setInterval(this.notifyInstructions, 14000, this._guild);
 	}
 
 	public initiate(guild: Guild) {
@@ -104,6 +107,32 @@ class AppointmentManager {
 		session.cancelSession(userId);
 	}
 
+	private notifyInstructions(guild: Guild): void {
+		BookingManager.Instance.getAllAppointments().forEach((app) => {
+			if (app.customReminder === undefined) {
+			} else {
+				const notifiTimestamp = moment.unix(app.customReminder);
+				const day = moment.unix(app.timestamp).format('Do MMMM YYYY');
+				const time = moment.unix(app.timestamp).format('HH:mm');
+				const now = moment();
+				if (notifiTimestamp.isBefore(now)) {
+					const member = guild.members.cache.get(app.id);
+					if (member !== undefined) {
+						member.send(
+							"**REMINDER**\nDon't miss your appointment with " +
+								app.prof +
+								' on ' +
+								day +
+								' at ' +
+								time
+						);
+					}
+					BookingManager.Instance.deleteReminder(app.id, app.timestamp);
+				}
+			}
+		});
+	}
+
 	private watchInstructions(guild: { channels: { cache: any[] } }): void {
 		const session = BookingManager.Instance;
 		guild.channels.cache
@@ -128,11 +157,19 @@ class AppointmentManager {
 									'Hey buddy, nice to see you in time for your meeting with ' +
 										appointment.prof
 								);
-								member.send(
-									'You got ' +
-										timeLeft.asSeconds() +
-										' seconds left, take a seat!'
-								);
+								if (timeLeft.asSeconds() < 180) {
+									member.send(
+										'You got ' +
+											Math.round(timeLeft.asSeconds()) +
+											' seconds left, take a seat!'
+									);
+								} else {
+									member.send(
+										'You got ' +
+											Math.round(timeLeft.asMinutes()) +
+											' minutes left, take a seat!'
+									);
+								}
 								// Send Request to Prof.
 								session.updateStudentStatus(ID, Status.WAITING);
 								console.log('Student is now waiting');
@@ -150,11 +187,19 @@ class AppointmentManager {
 									'Hey there, you are a bit late for your meeting with ' +
 										appointment.prof
 								);
-								member.send(
-									'Your meeting began ' +
-										timeMiss.asSeconds() +
-										' seconds ago! I will check, if the professor is still available. Take a seat!'
-								);
+								if (Math.abs(timeMiss.asSeconds()) < 180) {
+									member.send(
+										'Your meeting began ' +
+											Math.round(Math.abs(timeMiss.asSeconds())) +
+											' seconds ago! I will check, if the professor is still available. Take a seat!'
+									);
+								} else {
+									member.send(
+										'Your meeting began ' +
+											Math.round(Math.abs(timeMiss.asMinutes())) +
+											' minutes ago! I will check, if the professor is still available. Take a seat!'
+									);
+								}
 								// Send request to professor
 								session.updateStudentStatus(ID, Status.WAITING);
 								console.log('Student is now waiting');

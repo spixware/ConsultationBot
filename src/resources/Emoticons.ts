@@ -8,4 +8,9 @@ export const Emoticons = {
 	CLOCK: '🕑',
 	CHECK: '✅',
 	EMPTY: '❓',
+	NUMBERS: '🔢',
+	LETTERS: '🔡',
+	WARNING: '⚠️',
+	NOTIFICATION: '🔔',
+	MUTED: '🔕',
 };

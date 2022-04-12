@@ -10,6 +10,7 @@ export enum Status {
 	'REGISTERED',
 	'WAITING',
 	'APPLIED',
+	'LISTEN_FOR_REMINDER',
 }
 
 type Appointment = {
@@ -25,6 +26,7 @@ class Student {
 		this._userName = '';
 		this._matrNum = '';
 		this._cache = { professor: '', time: 0 };
+		this._edits = 0;
 	}
 
 	private userId: string;
@@ -34,6 +36,7 @@ class Student {
 	private _userName: string;
 	private _cache: Appointment;
 	private _scrollWidth: number = 0;
+	private _edits: number;
 
 	public set name(name: string) {
 		this._name = name;
@@ -49,6 +52,12 @@ class Student {
 	}
 	public set scrollWidth(num: number) {
 		this._scrollWidth = num;
+	}
+	public set edits(num: number) {
+		this._edits = num;
+	}
+	public get edits(): number {
+		return this._edits;
 	}
 	public get name(): string {
 		return this._name;
@@ -76,12 +85,10 @@ class Student {
 	public cacheProf(prof: string) {
 		this._cache.professor = prof;
 		if (this._cache.time !== 0) this._status = Status.CACHE_COMPLETE;
-		else this._status = Status.LISTEN_FOR_TIME;
 	}
 	public cacheTime(time: number) {
 		this._cache.time = time;
 		if (this._cache.professor !== '') this._status = Status.CACHE_COMPLETE;
-		else this._status = Status.LISTEN_FOR_PROF;
 	}
 }
 

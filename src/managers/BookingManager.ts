@@ -8,6 +8,7 @@ export type Consultation = {
 	id: string;
 	name: string;
 	matrNum: string;
+	customReminder?: number | undefined;
 };
 
 class BookingManager {
@@ -20,7 +21,7 @@ class BookingManager {
 	private students: Map<string, Student> = new Map();
 	private appointments: Array<Consultation> = [];
 
-	public startSession(userId: string, interaction: ButtonInteraction) {
+	public updateSession(userId: string, interaction: ButtonInteraction) {
 		this.activeSessions.set(userId, interaction);
 		if (this.students.get(userId) === undefined)
 			this.students.set(userId, new Student(userId));
@@ -81,9 +82,18 @@ class BookingManager {
 	}
 
 	public deleteAppointment(userId: string, timestamp: number) {
-		this.appointments = this.appointments.filter(
-			(app) => app.id !== userId && app.timestamp === timestamp
+		console.log(
+			'Deleting Consultation with user ID: ' +
+				userId +
+				' and timestamp: ' +
+				timestamp
 		);
+		const updatedAppointments: Array<Consultation> = [];
+		this.appointments.forEach((app) => {
+			if (!(app.id === userId && app.timestamp === timestamp))
+				updatedAppointments.push(app);
+		});
+		this.appointments = updatedAppointments;
 	}
 
 	public getAppointments(userId: string) {
@@ -98,6 +108,28 @@ class BookingManager {
 		});
 
 		return collector;
+	}
+
+	public getAllAppointments() {
+		return this.appointments;
+	}
+
+	public submitReminder(userId: string, timestamp: number, reminder: number) {
+		this.getAppointments(userId).forEach((app) => {
+			if (app.timestamp === timestamp) {
+				app.customReminder = reminder;
+				return;
+			}
+		});
+	}
+
+	public deleteReminder(userId: string, timestamp: number) {
+		this.getAppointments(userId).forEach((app) => {
+			if (app.timestamp === timestamp) {
+				app.customReminder = undefined;
+				return;
+			}
+		});
 	}
 
 	// only for dev purposes

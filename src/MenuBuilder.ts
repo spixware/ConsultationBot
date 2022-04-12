@@ -1,9 +1,4 @@
-import {
-	MessageEmbed,
-	MessageActionRow,
-	MessageMentions,
-	Guild,
-} from 'discord.js';
+import { MessageEmbed, MessageActionRow, Guild } from 'discord.js';
 import moment from 'moment';
 import { Emoticons } from './resources/Emoticons';
 import BookingManager, { Consultation } from './managers/BookingManager';
@@ -21,37 +16,30 @@ export function buildMainMenu() {
 		)
 		.addFields(
 			{
+				name: 'Instructions',
+				value:
+					'Get the mandatory guideline about this whole appointment process and what to do on time.',
+			},
+			{
 				name: 'Start Booking',
 				value:
 					'With that I can guide you through the appointment booking process.',
 			},
 			{
-				name: 'Shift',
-				value: 'Shift an existing appointment',
-			},
-			{
-				name: 'Cancel',
-				value: 'Cancel an appointment.',
-			},
-			{
-				name: 'Check',
-				value: 'Request all appointments that you are registered for.',
-			},
-			{
-				name: 'Instructions',
+				name: 'Check Appointments',
 				value:
-					'Get the mandatory guidline about this whole appointment process and what to do on time.',
+					'Request all appointments with details that you are registered for.',
 			},
 			{
 				name: 'Reminder',
 				value:
-					'Create or delete reminder, so I can inform you about upcomming appointments.',
+					'Create or delete reminder, so I can inform you about upcoming appointments.',
 			}
 		);
 	const row = new MessageActionRow().addComponents(
+		Buttons.instructionsMenu,
 		Buttons.start,
-		Buttons.checkMenu,
-		Buttons.instructionsMenu
+		Buttons.checkMenu
 	);
 
 	return {
@@ -73,6 +61,54 @@ export function buildStartMenu() {
 	const row = new MessageActionRow().addComponents(
 		Buttons.provideName,
 		Buttons.provideMatrNumber
+	);
+
+	return {
+		embeds: [embed],
+		components: [row],
+	};
+}
+
+export function buildMyAppointmentMenu(
+	userId: string,
+	prof: string,
+	time: number,
+	customReminder?: number
+) {
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle('Appointment')
+		.addFields(
+			{
+				name: 'When?',
+				value:
+					Emoticons.CLOCK +
+					' on ' +
+					moment.unix(time).format('Do-MMMM-YYYY') +
+					' at ' +
+					moment.unix(time).format('HH:mm'),
+			},
+			{
+				name: 'Where?',
+				value: Emoticons.PROF + ' Office of ' + prof,
+			},
+			{
+				name: 'Notifaction/Reminder',
+				value:
+					customReminder !== undefined
+						? Emoticons.NOTIFICATION +
+						  ' I will send you a reminder on ' +
+						  moment.unix(customReminder!).format('Do MMMM') +
+						  ' at ' +
+						  moment.unix(customReminder!).format('HH:mm')
+						: Emoticons.MUTED + ' No reminder is set.',
+			}
+		);
+
+	const row = new MessageActionRow().addComponents(
+		Buttons.instructionsMenu,
+		buildButton('@remAdd-' + time, 'Add Reminder', 'PRIMARY'),
+		buildButton('@appDel-' + time, 'Cancel Appointment', 'DANGER')
 	);
 
 	return {
@@ -139,14 +175,14 @@ export function buildRequestMenu(userId: string) {
 		.setDescription('')
 		.addFields(
 			{
-				name: 'Name:',
+				name: Emoticons.LETTERS + ' Name:',
 				value:
 					student !== undefined && student.name !== ''
 						? student.name + ' ' + Emoticons.CHECK
 						: 'No name provided yet. ' + Emoticons.EMPTY,
 			},
 			{
-				name: 'Matriculation Number:',
+				name: Emoticons.NUMBERS + ' Matriculation Number:',
 				value:
 					student !== undefined && student.matrNum !== ''
 						? student.matrNum + ' ' + Emoticons.CHECK
@@ -229,12 +265,21 @@ export function buildAppointmentMenu(userId: string) {
 			}
 		);
 	const row = new MessageActionRow().addComponents(
-		Buttons.profMenu,
-		Buttons.dateTime,
-		Buttons.cancel
+		Buttons.cancel,
+		Buttons.profMenu
 	);
 
-	if (student.status === Status.CACHE_COMPLETE)
+	if (student.cache.professor !== '') {
+		row.addComponents(Buttons.dateTime);
+	}
+
+	if (
+		student.status === Status.CACHE_COMPLETE ||
+		(student.name !== '' &&
+			student.matrNum !== '' &&
+			student.cache.professor !== '' &&
+			student.cache.time !== 0)
+	)
 		row.addComponents(Buttons.continue);
 
 	return {
@@ -348,9 +393,13 @@ export function buildRequestTimeMenu(userId: string) {
 		return buildStartMenu();
 	}
 	let time = student.cache.time;
+
 	const embed = new MessageEmbed()
 		.setColor('#0099ff')
-		.setTitle("Enter Time like '14:30'")
+		.setTitle("Enter Time like 'HH:MM'")
+		.setDescription(
+			Emoticons.WARNING + " Do not forget the ':' between the hour and minute."
+		)
 		.addFields(
 			{
 				name: Emoticons.CLOCK + ' Time:',
@@ -403,6 +452,14 @@ export function buildCheckMenu(userId: string) {
 		.setColor('#0099ff')
 		.setTitle('Check your Stats')
 		.addFields(
+			{
+				name: Emoticons.LETTERS + ' Your name:',
+				value: student!.name,
+			},
+			{
+				name: Emoticons.NUMBERS + ' Your student ID:',
+				value: student!.matrNum,
+			},
 			{
 				name: Emoticons.CALENDAR + ' Date:',
 				value:
@@ -464,6 +521,33 @@ export function joinRequestMenu(cons: Consultation, guild: Guild | undefined) {
 
 	return {
 		content: member!.user.tag,
+		embeds: [embed],
+		components: [row],
+	};
+}
+
+export function buildReminderMenu(userId: string, time: number) {
+	const embed = new MessageEmbed()
+		.setColor('#0099ff')
+		.setTitle(
+			Emoticons.NOTIFICATION +
+				' Enter how many hours/minutes you want to be notified before the appointment - Example: 1:30 !'
+		)
+		.setDescription(Emoticons.WARNING + ' only hours and minutes are allowed!')
+		.addFields({
+			name:
+				'Use this format ' +
+				Emoticons.RIGHT_ARROW +
+				' HH:MM ' +
+				Emoticons.LEFT_ARROW,
+			value:
+				'You would get a notification 1 hour and 23 minutes before the meeting.',
+		});
+	const row = new MessageActionRow().addComponents(
+		buildButton('@remReturn-' + time, 'Cancel', 'DANGER')
+	);
+
+	return {
 		embeds: [embed],
 		components: [row],
 	};
