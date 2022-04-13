@@ -146,7 +146,10 @@ class AppointmentManager {
 						member.user.tag + ' aka ' + student.name + ' ' + student.status
 					);
 				if (student !== undefined && status === Status.REGISTERED) {
+					console.log(student.status.toString());
+
 					session.getAppointments(ID).forEach((appointment) => {
+						if (student.status === Status.WAITING) return;
 						const now = moment();
 						const dateTime = moment.unix(appointment.timestamp);
 
@@ -171,7 +174,9 @@ class AppointmentManager {
 									);
 								}
 								// Send Request to Prof.
+								console.log(student.status.toString());
 								session.updateStudentStatus(ID, Status.WAITING);
+								console.log(student.status.toString());
 								console.log('Student is now waiting');
 								AppointmentManager.Instance.sendMoveRequest(appointment);
 								return;

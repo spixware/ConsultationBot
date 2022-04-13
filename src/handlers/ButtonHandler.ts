@@ -23,6 +23,7 @@ import BookingManager from '../managers/BookingManager';
 import { Status } from '../entities/Student';
 import { AppliedProfs } from '../resources/AppliedProfs';
 import AppointmentManager from '../managers/AppointmentManager';
+import { Emoticons } from '../resources/Emoticons';
 
 const session: BookingManager = BookingManager.Instance;
 
@@ -56,14 +57,20 @@ export async function handleButtonInteraction(
 			interaction.deleteReply();
 			break;
 		case 'continue':
+			if (!sessionExists) session.updateSession(userId, interaction);
 			if (status === Status.FORM_COMPLETE || status === Status.REGISTERED) {
 				menu = buildAppointmentMenu(userId);
-			} else if (status === Status.CACHE_COMPLETE) {
+				if (student?.cache.professor !== '' && student?.cache.time !== 0)
+					session.updateStudentStatus(userId, Status.CACHE_COMPLETE);
+			} else if (
+				student?.cache.professor !== '' &&
+				student?.cache.time !== 0 &&
+				status === Status.CACHE_COMPLETE
+			) {
 				menu = buildCheckMenu(userId);
 			} else {
 				menu = refreshMenu(userId);
 			}
-			if (!sessionExists) session.updateSession(userId, interaction);
 			interaction.update(menu);
 			break;
 		case 'check':
@@ -132,16 +139,17 @@ export async function handleButtonInteraction(
 			session.updateStudentStatus(userId, Status.LISTEN_FOR_MATRNUM);
 			break;
 		case 'cancel':
-			if (status === Status.CACHE_COMPLETE) {
-				menu = buildRequestMenu(userId);
-			}
-			menu = refreshMenu(userId);
+			if (student?.status === Status.CACHE_COMPLETE)
+				session.updateStudentStatus(userId, Status.FORM_COMPLETE);
+			menu = buildRequestMenu(userId);
 			interaction.update(menu);
 			break;
 		case 'p_israel':
 			student?.cacheProf('Prof. Dr. Johann H. Israel');
 			interaction.user.send(
-				AppliedProfs.Israel.name +
+				Emoticons.PROF +
+					' ' +
+					AppliedProfs.Israel.name +
 					' is available ' +
 					AppliedProfs.Israel.timeWindow
 			);
@@ -151,7 +159,9 @@ export async function handleButtonInteraction(
 		case 'p_wulff':
 			student?.cacheProf('Prof. Dr. Debora Weber-Wulff');
 			interaction.user.send(
-				AppliedProfs.Wulff.name +
+				Emoticons.PROF +
+					' ' +
+					AppliedProfs.Wulff.name +
 					' is available ' +
 					AppliedProfs.Wulff.timeWindow
 			);
@@ -161,7 +171,11 @@ export async function handleButtonInteraction(
 		case 'p_lenz':
 			student?.cacheProf('Prof. Dr. Tobias Lenz');
 			interaction.user.send(
-				AppliedProfs.Lenz.name + ' is available ' + AppliedProfs.Lenz.timeWindow
+				Emoticons.PROF +
+					' ' +
+					AppliedProfs.Lenz.name +
+					' is available ' +
+					AppliedProfs.Lenz.timeWindow
 			);
 			student!.cache.time = 0;
 			interaction.update(buildAppointmentMenu(userId));
@@ -169,7 +183,9 @@ export async function handleButtonInteraction(
 		case 'p_kleinen':
 			student?.cacheProf('Prof. Dr. Barne Kleinen');
 			interaction.user.send(
-				AppliedProfs.Kleinen.name +
+				Emoticons.PROF +
+					' ' +
+					AppliedProfs.Kleinen.name +
 					' is available ' +
 					AppliedProfs.Kleinen.timeWindow
 			);
